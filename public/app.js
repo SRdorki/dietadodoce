@@ -5,6 +5,8 @@ let bonusData = [];
 
 // ================= APP STATE MANAGEMENT =================
 let activeLesson = null; // Will be set after courseData is loaded
+let commentsPollingInterval = null;
+let communityPollingInterval = null;
 
 let completedLessons = JSON.parse(localStorage.getItem('dd_completed_lessons')) || [];
 let groceryChecklist = JSON.parse(localStorage.getItem('dd_grocery_checklist')) || Array(12).fill(false);
@@ -327,8 +329,18 @@ function setupTabNavigation() {
       if (tabId === 'tab-webhook') {
         fetchWebhookLogs();
       }
+
+      // Community feed: carrega e inicia polling ao entrar na aba
       if (tabId === 'tab-community') {
         loadCommunityFeed();
+        if (communityPollingInterval) clearInterval(communityPollingInterval);
+        communityPollingInterval = setInterval(loadCommunityFeed, 15000);
+      } else {
+        // Para o polling ao sair da aba de comunidade
+        if (communityPollingInterval) {
+          clearInterval(communityPollingInterval);
+          communityPollingInterval = null;
+        }
       }
     });
   });
@@ -534,8 +546,9 @@ function loadLessonData(lesson) {
   // Renderiza materiais de apoio (attachments)
   loadLessonAttachments(lesson);
 
-  // Carrega comentários da aula
+  // Carrega comentários da aula e inicia auto-refresh a cada 10s
   loadLessonComments(lesson.id);
+  startCommentsPolling(lesson.id);
 
   // Atualiza botão de "Marcar como Concluída"
   const lessonIdForCompletion = String(lesson.id);
@@ -666,12 +679,14 @@ function renderComments(comments) {
   }
 
   const currentUser = JSON.parse(sessionStorage.getItem('user_session'))?.user;
+  const isCurrentUserAdmin = currentUser && currentUser.role === 'admin';
 
   commentsListBox.innerHTML = comments.map(comment => {
     const initials = comment.user_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     const date = new Date(comment.created_at);
     const timeAgo = getTimeAgo(date);
     const isOwnComment = currentUser && comment.user_email === currentUser.email;
+    const canDelete = isOwnComment || isCurrentUserAdmin;
 
     return `
       <div class="comment-item" data-comment-id="${comment.id}">
@@ -682,7 +697,7 @@ function renderComments(comments) {
             <span>${timeAgo}</span>
           </div>
           <p>${escapeHtml(comment.comment_text)}</p>
-          ${isOwnComment ? `<button class="btn-delete-comment" onclick="deleteComment(${comment.id})" title="Excluir comentário"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+          ${canDelete ? `<button class="btn-delete-comment" onclick="deleteComment(${comment.id})" title="Excluir comentário"><i class="fa-solid fa-trash-can"></i></button>` : ''}
         </div>
       </div>
     `;
@@ -737,6 +752,24 @@ async function deleteComment(commentId) {
 // Make deleteComment globally accessible for onclick handlers
 window.deleteComment = deleteComment;
 
+// ======= POLLING PARA ATUALIZAÇÃO EM TEMPO REAL =======
+
+// Inicia polling de comentários da aula ativa
+function startCommentsPolling(lessonId) {
+  stopCommentsPolling();
+  commentsPollingInterval = setInterval(() => {
+    loadLessonComments(lessonId);
+  }, 10000); // Atualiza a cada 10 segundos
+}
+
+// Para polling de comentários
+function stopCommentsPolling() {
+  if (commentsPollingInterval) {
+    clearInterval(commentsPollingInterval);
+    commentsPollingInterval = null;
+  }
+}
+
 // ================= COMMUNITY FEED (GLOBAL COMMENTS) =================
 
 // Load community feed (all comments from all lessons)
@@ -767,12 +800,14 @@ function renderCommunityFeed(comments) {
   }
 
   const currentUser = JSON.parse(sessionStorage.getItem('user_session'))?.user;
+  const isCurrentUserAdmin = currentUser && currentUser.role === 'admin';
 
   feedList.innerHTML = comments.map(comment => {
     const initials = comment.user_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     const date = new Date(comment.created_at);
     const timeAgo = getTimeAgo(date);
     const isOwnComment = currentUser && comment.user_email === currentUser.email;
+    const canDelete = isOwnComment || isCurrentUserAdmin;
 
     // Find lesson info
     const lessonInfo = findLessonById(comment.lesson_id);
@@ -792,7 +827,7 @@ function renderCommunityFeed(comments) {
             ${moduleTitle ? `${moduleTitle} → ` : ''}${lessonTitle}
           </div>
           <p>${escapeHtml(comment.comment_text)}</p>
-          ${isOwnComment ? `<button class="btn-delete-comment" onclick="deleteCommunityComment(${comment.id})" title="Excluir comentário"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+          ${canDelete ? `<button class="btn-delete-comment" onclick="deleteCommunityComment(${comment.id})" title="Excluir comentário"><i class="fa-solid fa-trash-can"></i></button>` : ''}
         </div>
       </div>
     `;

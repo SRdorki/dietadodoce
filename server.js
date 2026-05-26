@@ -833,18 +833,20 @@ async function dbCreateComment(commentData) {
 }
 
 // Delete comment
-async function dbDeleteComment(commentId, userEmail) {
+async function dbDeleteComment(commentId, userEmail, isAdmin = false) {
   if (supabase) {
     try {
-      // Only allow deletion if comment belongs to user
-      const { data: comment } = await supabase
-        .from('comments')
-        .select('*')
-        .eq('id', commentId)
-        .single();
+      if (!isAdmin) {
+        // Only allow deletion if comment belongs to user
+        const { data: comment } = await supabase
+          .from('comments')
+          .select('*')
+          .eq('id', commentId)
+          .single();
 
-      if (!comment || comment.user_email !== userEmail) {
-        return { success: false, error: 'Não autorizado' };
+        if (!comment || comment.user_email !== userEmail) {
+          return { success: false, error: 'Não autorizado' };
+        }
       }
 
       const { error } = await supabase
@@ -860,7 +862,10 @@ async function dbDeleteComment(commentId, userEmail) {
   }
 
   const comments = readCommentsLocal();
-  const index = comments.findIndex(c => String(c.id) === String(commentId) && c.user_email === userEmail);
+  const index = comments.findIndex(c =>
+    String(c.id) === String(commentId) &&
+    (isAdmin || c.user_email === userEmail)
+  );
   if (index >= 0) {
     comments.splice(index, 1);
     writeCommentsLocal(comments);
@@ -1342,7 +1347,11 @@ app.delete('/api/comments/:commentId', async (req, res) => {
   }
 
   try {
-    const result = await dbDeleteComment(commentId, user_email);
+    // Admins podem deletar qualquer comentário
+    const requester = await dbFindUser(user_email);
+    const isAdmin = requester && requester.role === 'admin';
+
+    const result = await dbDeleteComment(commentId, user_email, isAdmin);
     if (result.success) {
       res.json({ success: true });
     } else {

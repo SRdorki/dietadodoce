@@ -331,7 +331,7 @@
             </div>
           </div>
 
-          <!-- Coluna Lateral de Monetização Interna (Upsell Invisível) & Comunidade -->
+          <!-- Coluna Lateral de Monetização Interna (Upsell Invisível) -->
           <div class="upsell-column">
             <!-- Box de Order Bump / Upsell Interno Focado em LTV -->
             <div class="upsell-card-vip premium-glow">
@@ -346,39 +346,6 @@
               <button class="btn btn-primary btn-block animate-pulse" id="btn-trigger-upsell">Quero o Acompanhamento VIP
                 🚀</button>
               <span class="offer-guarantee">🛡️ Garantia incondicional de 7 dias</span>
-            </div>
-
-            <!-- Comunidade / Box de Interação -->
-            <div class="comments-card">
-              <h4>💬 Comunidade VIP Dieta do Doce</h4>
-              <div class="comment-input-wrap">
-                <input type="text" id="new-comment-text" placeholder="Compartilhe suas vitórias ou dúvidas...">
-                <button id="btn-post-comment" class="btn btn-accent">Enviar</button>
-              </div>
-              <div class="comments-list" id="comments-list-box">
-                <div class="comment-item">
-                  <div class="comment-avatar">👨‍⚕️</div>
-                  <div class="comment-body">
-                    <div class="comment-meta">
-                      <strong>Dra. Marina (Nutri Dieta do Doce)</strong>
-                      <span>Há 2 horas</span>
-                    </div>
-                    <p>Seja bem-vinda ao nosso portal VIP! Coloque em prática as 3 Janelas Metabólicas já a partir do
-                      seu almoço de hoje. Conte comigo nessa jornada de liberdade nutricional!</p>
-                  </div>
-                </div>
-                <div class="comment-item">
-                  <div class="comment-avatar">🙋‍♀️</div>
-                  <div class="comment-body">
-                    <div class="comment-meta">
-                      <strong>Paula S.</strong>
-                      <span>Há 1 dia</span>
-                    </div>
-                    <p>Meninas, o Brigadeiro Fit de Colher do Módulo 4 salvou minha TPM ontem à noite! Juro, comi e fui
-                      dormir feliz sem peso na consciência e mantendo meu déficit calórico. Incrível demais!</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -829,14 +796,28 @@
       <section id="tab-community" class="tab-panel">
         <div class="section-desc">
           <h2><i class="fa-solid fa-users" style="color: var(--primary-strawberry); margin-right: 10px;"></i>Comunidade VIP</h2>
-          <p>Veja o que as outras alunas estão comentando, compartilhe suas experiências e tire dúvidas!</p>
+          <p>Compartilhe suas vitórias, tire dúvidas e veja o que as outras alunas estão comentando!</p>
+        </div>
+
+        <!-- Formulário de Postagem -->
+        <div class="community-post-card">
+          <h4><i class="fa-solid fa-pen-to-square" style="color: var(--accent-honey); margin-right: 8px;"></i>Deixe seu Comentário</h4>
+          <div class="community-post-form">
+            <select id="community-lesson-select" class="community-lesson-select">
+              <option value="">📚 Selecione a aula (opcional)...</option>
+            </select>
+            <div class="community-textarea-wrap">
+              <textarea id="community-comment-text" rows="3" placeholder="Compartilhe sua vitória, dúvida ou experiência..."></textarea>
+              <button id="btn-community-post" class="btn btn-accent"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i>Enviar</button>
+            </div>
+          </div>
         </div>
 
         <!-- Feed de Comentários Global -->
         <div class="community-feed-container">
           <div class="community-feed-header">
-            <h3><i class="fa-solid fa-comments" style="color: var(--accent-honey); margin-right: 8px;"></i>Feed de Comentários</h3>
-            <p class="feed-subtitle">Últimos 100 comentários de todas as aulas</p>
+            <h3><i class="fa-solid fa-comments" style="color: var(--accent-honey); margin-right: 8px;"></i>Feed da Comunidade</h3>
+            <p class="feed-subtitle">Últimos comentários de todas as aulas</p>
           </div>
 
           <!-- Lista de Comentários -->

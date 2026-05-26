@@ -1161,6 +1161,88 @@ a:hover {
 }
 
 /* ================= ABA COMUNIDADE: FEED GLOBAL ================= */
+/* ================= COMMUNITY POST FORM ================= */
+.community-post-card {
+  background: var(--card-glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.community-post-card h4 {
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 1.2rem;
+  font-family: var(--font-headings);
+}
+
+.community-post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.community-lesson-select {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-creme);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  padding: 0.6rem 1rem;
+  width: 100%;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+}
+
+.community-lesson-select:focus {
+  outline: none;
+  border-color: var(--primary-strawberry);
+}
+
+.community-lesson-select option,
+.community-lesson-select optgroup {
+  background: hsl(20, 20%, 12%);
+  color: var(--text-creme);
+}
+
+.community-textarea-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.community-textarea-wrap textarea {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-sm);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  resize: none;
+  transition: var(--transition-smooth);
+  line-height: 1.5;
+}
+
+.community-textarea-wrap textarea:focus {
+  outline: none;
+  border-color: var(--primary-strawberry);
+}
+
+.community-textarea-wrap .btn {
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+/* ================= COMMUNITY FEED ================= */
 .community-feed-container {
   background: var(--card-glass);
   border: 1px solid var(--glass-border);

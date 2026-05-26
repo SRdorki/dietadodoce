@@ -5,7 +5,6 @@ let bonusData = [];
 
 // ================= APP STATE MANAGEMENT =================
 let activeLesson = null; // Will be set after courseData is loaded
-let commentsPollingInterval = null;
 let communityPollingInterval = null;
 
 let completedLessons = JSON.parse(localStorage.getItem('dd_completed_lessons')) || [];
@@ -132,9 +131,7 @@ const lessonRationaleText = document.getElementById('lesson-rationale-text');
 const lessonActionList = document.getElementById('lesson-action-list');
 const detailsTabButtons = document.querySelectorAll('.details-tab-btn');
 const detailsTabPanels = document.querySelectorAll('.details-tab-panel');
-const btnPostComment = document.getElementById('btn-post-comment');
-const newCommentText = document.getElementById('new-comment-text');
-const commentsListBox = document.getElementById('comments-list-box');
+
 
 // Exercises Elements
 const stopReflectionInput = document.getElementById('stop-reflection');
@@ -332,6 +329,8 @@ function setupTabNavigation() {
 
       // Community feed: carrega e inicia polling ao entrar na aba
       if (tabId === 'tab-community') {
+        populateCommunityLessonSelect();
+        setupCommunityPostForm();
         loadCommunityFeed();
         if (communityPollingInterval) clearInterval(communityPollingInterval);
         communityPollingInterval = setInterval(loadCommunityFeed, 15000);
@@ -546,10 +545,6 @@ function loadLessonData(lesson) {
   // Renderiza materiais de apoio (attachments)
   loadLessonAttachments(lesson);
 
-  // Carrega comentários da aula e inicia auto-refresh a cada 10s
-  loadLessonComments(lesson.id);
-  startCommentsPolling(lesson.id);
-
   // Atualiza botão de "Marcar como Concluída"
   const lessonIdForCompletion = String(lesson.id);
   const isCompleted = completedLessons.includes(lessonIdForCompletion);
@@ -653,57 +648,6 @@ function updateProgressBar() {
 
 // ================= COMMENTS SYSTEM (COMMUNITY) =================
 
-// Load comments for a lesson
-async function loadLessonComments(lessonId) {
-  if (!commentsListBox) return;
-
-  try {
-    const res = await fetch(`/api/lessons/${lessonId}/comments`);
-    if (!res.ok) throw new Error('Erro ao carregar comentários');
-
-    const comments = await res.json();
-    renderComments(comments);
-  } catch (e) {
-    console.error('Erro ao carregar comentários:', e);
-    commentsListBox.innerHTML = '<p style="color:var(--text-creme-muted); text-align:center; padding:1rem;">Erro ao carregar comentários.</p>';
-  }
-}
-
-// Render comments list
-function renderComments(comments) {
-  if (!commentsListBox) return;
-
-  if (comments.length === 0) {
-    commentsListBox.innerHTML = '<p style="color:var(--text-creme-muted); text-align:center; padding:1rem;"><i class="fa-solid fa-comments" style="margin-right:8px;"></i>Nenhum comentário ainda. Seja o primeiro a comentar!</p>';
-    return;
-  }
-
-  const currentUser = JSON.parse(sessionStorage.getItem('user_session'))?.user;
-  const isCurrentUserAdmin = currentUser && currentUser.role === 'admin';
-
-  commentsListBox.innerHTML = comments.map(comment => {
-    const initials = comment.user_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-    const date = new Date(comment.created_at);
-    const timeAgo = getTimeAgo(date);
-    const isOwnComment = currentUser && comment.user_email === currentUser.email;
-    const canDelete = isOwnComment || isCurrentUserAdmin;
-
-    return `
-      <div class="comment-item" data-comment-id="${comment.id}">
-        <div class="comment-avatar">${initials}</div>
-        <div class="comment-body">
-          <div class="comment-meta">
-            <strong>${comment.user_name}</strong>
-            <span>${timeAgo}</span>
-          </div>
-          <p>${escapeHtml(comment.comment_text)}</p>
-          ${canDelete ? `<button class="btn-delete-comment" onclick="deleteComment(${comment.id})" title="Excluir comentário"><i class="fa-solid fa-trash-can"></i></button>` : ''}
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
 // Helper: Calculate time ago
 function getTimeAgo(date) {
   const seconds = Math.floor((new Date() - date) / 1000);
@@ -723,7 +667,7 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Delete comment
+// Delete comment (usado tanto pelo feed quanto por handlers inline)
 async function deleteComment(commentId) {
   if (!confirm('Tem certeza que deseja excluir este comentário?')) return;
 
@@ -738,11 +682,6 @@ async function deleteComment(commentId) {
     });
 
     if (!res.ok) throw new Error('Erro ao excluir comentário');
-
-    // Reload comments
-    if (activeLesson) {
-      loadLessonComments(activeLesson.id);
-    }
   } catch (e) {
     console.error('Erro ao excluir comentário:', e);
     alert('Erro ao excluir comentário. Tente novamente.');
@@ -752,22 +691,89 @@ async function deleteComment(commentId) {
 // Make deleteComment globally accessible for onclick handlers
 window.deleteComment = deleteComment;
 
-// ======= POLLING PARA ATUALIZAÇÃO EM TEMPO REAL =======
+// ======= POSTAGEM NA COMUNIDADE =======
 
-// Inicia polling de comentários da aula ativa
-function startCommentsPolling(lessonId) {
-  stopCommentsPolling();
-  commentsPollingInterval = setInterval(() => {
-    loadLessonComments(lessonId);
-  }, 10000); // Atualiza a cada 10 segundos
+// Popula o select de aulas no formulário da comunidade
+function populateCommunityLessonSelect() {
+  const select = document.getElementById('community-lesson-select');
+  if (!select) return;
+
+  // Mantém a opção padrão
+  select.innerHTML = '<option value="">📚 Selecione a aula (opcional)...</option>';
+
+  courseData.forEach(module => {
+    if (!module.lessons || module.lessons.length === 0) return;
+    const group = document.createElement('optgroup');
+    group.label = module.title;
+    module.lessons.forEach(lesson => {
+      const opt = document.createElement('option');
+      opt.value = lesson.id;
+      opt.textContent = lesson.title;
+      group.appendChild(opt);
+    });
+    select.appendChild(group);
+  });
 }
 
-// Para polling de comentários
-function stopCommentsPolling() {
-  if (commentsPollingInterval) {
-    clearInterval(commentsPollingInterval);
-    commentsPollingInterval = null;
-  }
+// Configura o botão de postagem da aba Comunidade
+function setupCommunityPostForm() {
+  const btnPost = document.getElementById('btn-community-post');
+  const textarea = document.getElementById('community-comment-text');
+  const select = document.getElementById('community-lesson-select');
+  if (!btnPost || !textarea) return;
+
+  btnPost.addEventListener('click', async () => {
+    const text = textarea.value.trim();
+    if (!text) {
+      textarea.focus();
+      return;
+    }
+
+    const user = JSON.parse(sessionStorage.getItem('user_session'))?.user;
+    if (!user) {
+      alert('Você precisa estar logado para comentar.');
+      return;
+    }
+
+    // Usa a aula selecionada ou a primeira aula do curso como fallback
+    let lessonId = select ? select.value : '';
+    if (!lessonId) {
+      const firstLesson = courseData[0]?.lessons?.[0];
+      lessonId = firstLesson ? firstLesson.id : 'geral';
+    }
+
+    btnPost.disabled = true;
+    btnPost.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:6px;"></i>Enviando...';
+
+    try {
+      const res = await fetch(`/api/lessons/${lessonId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_email: user.email,
+          user_name: user.name,
+          comment_text: text
+        })
+      });
+
+      if (!res.ok) throw new Error('Erro ao postar comentário');
+
+      textarea.value = '';
+      if (select) select.value = '';
+      await loadCommunityFeed();
+    } catch (e) {
+      console.error('Erro ao postar comentário:', e);
+      alert('Erro ao postar comentário. Tente novamente.');
+    } finally {
+      btnPost.disabled = false;
+      btnPost.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:6px;"></i>Enviar';
+    }
+  });
+
+  // Enviar com Ctrl+Enter no textarea
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.ctrlKey) btnPost.click();
+  });
 }
 
 // ================= COMMUNITY FEED (GLOBAL COMMENTS) =================
@@ -2083,7 +2089,7 @@ async function loadAdminLocksAndAnnouncement() {
       { id: 'tab-podclasses',  section: '#tab-podclasses',  sidebarTab: 'tab-podclasses'  },
       { id: 'tab-exercises',   section: '#tab-exercises',   sidebarTab: 'tab-exercises'   },
       { id: 'tab-achievements',section: '#tab-achievements',sidebarTab: 'tab-achievements' },
-      { id: 'tab-comments',    section: '.comments-card',   sidebarTab: null              },
+      { id: 'tab-comments',    section: '#tab-community',   sidebarTab: 'tab-community'   },
       { id: 'tab-upsell',      section: '.upsell-card-vip', sidebarTab: null              },
     ];
 

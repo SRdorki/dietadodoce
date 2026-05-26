@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Área de Membros VIP - Dieta do Doce 🍫</title>
+  <!-- Google Fonts: Outfit (títulos) & Inter (texto) -->
+  <link rel="shortcut icon" href="assets/brigadeiro.png" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- ================= TELAS DE LOGIN / AUTENTICAÇÃO ================= -->
+  <div id="login-container" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo"><i class="fa-solid fa-cookie-bite"
+            style="color: var(--primary-strawberry); margin-right: 8px;"></i>Dieta do Doce</div>
+        <h2>Área de Membros VIP</h2>
+        <p>Acesse o seu protocolo estratégico de emagrecimento feliz</p>
+      </div>
+
+      <div id="login-error-msg" class="alert-box alert-error hidden"></div>
+
+      <form id="login-form">
+        <div class="input-group">
+          <label for="login-email">Seu E-mail de Compra</label>
+          <input type="email" id="login-email" placeholder="ex: aluna@dietadodoce.com.br" required>
+        </div>
+
+        <div class="input-group">
+          <label for="login-password">Senha de Acesso</label>
+          <input type="password" id="login-password" placeholder="Digite sua senha (padrão: doce123)" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Entrar no Portal VIP <i class="fa-solid fa-rocket"
+            style="margin-left: 6px;"></i></button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Ainda não comprou? <a href="#"
+            onclick="alert('Redirecionando para a página de vendas...'); return false;">Garanta seu Acesso Aqui</a></p>
+        <p>Sua senha padrão é <strong>doce123</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PORTAL PRINCIPAL (ÁREA LOGADA) ================= -->
+  <div id="app-container" class="app-layout hidden">
+
+    <!-- SIDEBAR (MENU E MÓDULOS) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">🍫 Dieta do Doce</div>
+        <div class="badge">Membro VIP</div>
+      </div>
+
+      <!-- Barra de Progresso do Aluno -->
+      <div class="progress-container">
+        <div class="progress-labels">
+          <span>Seu Progresso</span>
+          <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+        <div class="progress-counter">
+          Aulas concluídas: <span id="progress-count">0/13</span>
+        </div>
+      </div>
+
+      <!-- Menu de Abas de Conteúdo -->
+      <nav class="sidebar-tabs">
+        <button class="nav-tab-btn active" data-tab="tab-classes">
+          <i class="fa-solid fa-circle-play sidebar-icon"></i>
+          Módulos e Aulas
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-podclasses">
+          <i class="fa-solid fa-microphone sidebar-icon"></i>
+          Podclasses de Apoio
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-exercises">
+          <i class="fa-solid fa-book-open sidebar-icon"></i>
+          Caderno de Atividades
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-achievements">
+          <i class="fa-solid fa-trophy sidebar-icon"></i>
+          Conquistas & Bônus
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-community">
+          <i class="fa-solid fa-users sidebar-icon"></i>
+          Comunidade
+        </button>
+        <button class="nav-tab-btn hidden" data-tab="tab-admin" id="sidebar-admin-btn">
+          <i class="fa-solid fa-user-shield sidebar-icon"></i>
+          Painel Admin
+        </button>
+        <button class="nav-tab-btn developer-only hidden" data-tab="tab-webhook" id="sidebar-webhook-btn">
+          <i class="fa-solid fa-network-wired sidebar-icon"></i>
+          Integração Webhook
+        </button>
+      </nav>
+
+      <!-- Lista de Módulos (Renderizada dinamicamente nas aulas) -->
+      <div id="module-accordion" class="module-accordion">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+
+      <!-- Informações do Usuário & Logout -->
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar-initials">AV</div>
+          <div class="user-details">
+            <span class="user-name" id="user-display-name">Aluna VIP</span>
+            <span class="user-email" id="user-display-email">aluna@gmail.com</span>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn-logout" title="Sair da Conta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
+    <main class="main-content">
+
+      <!-- Banner de Aviso Global Administrador -->
+      <div id="global-announcement-banner" class="global-banner hidden">
+        <span class="banner-icon"><i class="fa-solid fa-bullhorn" style="color: #fff;"></i></span>
+        <span id="banner-text">Comunicado importante aqui...</span>
+      </div>
+
+      <!-- HEADER DO PORTAL -->
+      <header class="content-header">
+        <div class="header-greeting">
+          <h1 id="welcome-title">Bem-vinda de volta, Aluna! <i class="fa-regular fa-hand"
+              style="color: var(--accent-honey); margin-left: 6px;"></i></h1>
+          <p>O seu doce diário te aguarda na janela metabólica ideal.</p>
+        </div>
+        <div class="header-actions">
+          <div class="quick-badge premium-glow">🏆 Acesso Vitalício</div>
+        </div>
+      </header>
+
+      <!-- SEÇÕES DAS ABAS (TABS CONTROLLERS) -->
+
+      <!-- ================= ABA 1: PLAYER DE AULAS ================= -->
+      <section id="tab-classes" class="tab-panel active">
+        <div class="classes-grid">
+          <!-- Bloco do Player e Detalhes da Aula -->
+          <div class="player-wrapper">
+            <!-- Título da aula (sempre visível, independente de ter vídeo) -->
+            <div class="lesson-player-title-bar">
+              <h2 id="player-lesson-title" class="lesson-player-title">Carregando aula...</h2>
+            </div>
+
+            <!-- Video Container — oculto quando a aula não tem vídeo -->
+            <div class="video-container" style="display:none;">
+              <div class="video-placeholder" id="video-box">
+                <!-- O iframe é injetado aqui dinamicamente pelo JS quando há iframe_url -->
+              </div>
+            </div>
+
+            <!-- Controles Abaixo do Vídeo -->
+            <div class="video-actions-bar">
+              <button id="btn-mark-complete" class="btn btn-secondary btn-complete">
+                <span class="checkbox-box"></span> Marcar como Concluída
+              </button>
+              <div class="share-lesson">
+                <span>Compartilhe com as amigas:</span>
+                <button class="btn-share" onclick="alert('Link copiado para a área de transferência!')"><i
+                    class="fa-solid fa-link" style="margin-right:6px;"></i>Copiar Link</button>
+              </div>
+            </div>
+
+            <!-- Card do Quiz de Nivelamento (Visível apenas na aula de Boas-Vindas) -->
+            <div id="onboarding-quiz-card" class="lesson-details-card premium-glow hidden">
+              <div class="quiz-header">
+                <span class="quiz-badge">✨ Rápido & Personalizado</span>
+                <h3>Formulário de Nivelamento Inicial 🧠</h3>
+                <p>Preencha em menos de 1 minuto para definirmos seu Perfil Metabólico Doce e turbinar seus resultados!
+                </p>
+              </div>
+
+              <div id="quiz-step-1" class="quiz-step-box active">
+                <span class="step-counter">Pergunta 1 de 3</span>
+                <h4>Qual o seu principal desafio hoje com a alimentação?</h4>
+                <div class="quiz-options">
+                  <div class="quiz-opt-card" data-val="culpa">
+                    <span class="opt-emoji">🥺</span>
+                    <strong>Culpa Pós-Doce</strong>
+                    <p>Eu sinto que saboto tudo se comer um doce comum.</p>
+                  </div>
+                  <div class="quiz-opt-card" data-val="ansiedade">
+                    <span class="opt-emoji">🌙</span>
+                    <strong>Ansiedade Noturna</strong>
+                    <p>Sinto um desejo incontrolável de comer doces à noite.</p>
+                  </div>
+                  <div class="quiz-opt-card" data-val="tpm">
+                    <span class="opt-emoji">⚡</span>
+                    <strong>TPM Intensa</strong>
+                    <p>Meus hormônios mandam na minha fome por açúcar.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="quiz-step-2" class="quiz-step-box hidden">
+                <span class="step-counter">Pergunta 2 de 3</span>
+                <h4>Qual tipo de doce é a sua maior fraqueza?</h4>
+                <div class="quiz-options">
+                  <div class="quiz-opt-card" data-val="chocolate">
+                    <span class="opt-emoji">🍫</span>
+                    <strong>Chocolate / Brigadeiro</strong>
+                    <p>O cacau é meu ponto fraco absoluto.</p>
+                  </div>
+                  <div class="quiz-opt-card" data-val="bolo">
+                    <span class="opt-emoji">🍰</span>
+                    <strong>Bolos, Tortas & Massas</strong>
+                    <p>Gosto de doces assados e cremosos.</p>
+                  </div>
+                  <div class="quiz-opt-card" data-val="processado">
+                    <span class="opt-emoji">🍬</span>
+                    <strong>Balas & Sorvetes</strong>
+                    <p>Doces extremamente açucarados e industriais.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="quiz-step-3" class="quiz-step-box hidden">
+                <span class="step-counter">Pergunta 3 de 3</span>
+                <h4>Como é sua rotina e tempo para a cozinha?</h4>
+                <div class="quiz-options">
+                  <div class="quiz-opt-card" data-val="sem_tempo">
+                    <span class="opt-emoji">⏱️</span>
+                    <strong>Zero Tempo</strong>
+                    <p>Preciso de receitas práticas de no máximo 2 minutos.</p>
+                  </div>
+                  <div class="quiz-opt-card" data-val="gosta">
+                    <span class="opt-emoji">👩‍🍳</span>
+                    <strong>Curto Cozinhar</strong>
+                    <p>Adoro preparar e testar receitas fits elaboradas.</p>
+                  </div>
+                  <div class="quiz-opt-card" data-val="misto">
+                    <span class="opt-emoji">🥗</span>
+                    <strong>Equilibrado</strong>
+                    <p>Gosto de misturar praticidade com preparos semanais.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="quiz-result-box" class="quiz-result-box hidden">
+                <div class="celebrate-avatar">🎉</div>
+                <h4>Perfil Calculado com Sucesso!</h4>
+                <h3 id="quiz-profile-name" class="premium-glow-text">--</h3>
+                <p id="quiz-profile-desc">--</p>
+                <button id="btn-quiz-finish" class="btn btn-primary">Aplicar Personalização e Concluir Onboarding
+                  🚀</button>
+              </div>
+            </div>
+
+            <!-- Ementa / Detalhes de Texto da Aula Ativa -->
+            <div class="lesson-details-card">
+              <div class="details-tabs">
+                <button class="details-tab-btn active" data-details="lesson-summary">📄 Resumo Executivo</button>
+                <button class="details-tab-btn" data-details="lesson-action">🎯 Como Aplicar Hoje</button>
+                <button class="details-tab-btn" data-details="lesson-downloads">📥 Material de Apoio</button>
+              </div>
+
+              <!-- Conteúdos das sub-abas de detalhes -->
+              <div class="details-content-box">
+                <!-- Aba de Resumo Executivo -->
+                <div id="lesson-summary" class="details-tab-panel active">
+                  <div class="executive-box">
+                    <h4>💡 A Grande Conclusão:</h4>
+                    <p id="lesson-conclusion-text">O problema do seu emagrecimento nunca foi a falta de força de
+                      vontade, mas sim a estratégia de restrição.</p>
+                  </div>
+                  <div class="rationale-box">
+                    <h4>🧠 Por que isso acontece?</h4>
+                    <p id="lesson-rationale-text">Cortar totalmente o doce cria o "efeito do proibido". A privação
+                      aumenta a grelina (fome) e o cortisol (estresse), o que te arrasta direto para o ciclo de
+                      compulsão, recaída e culpa.</p>
+                  </div>
+                </div>
+
+                <!-- Aba de Como Aplicar Hoje -->
+                <div id="lesson-action" class="details-tab-panel">
+                  <h4>⚡ Plano Prático de Ação:</h4>
+                  <ol id="lesson-action-list" class="styled-list">
+                    <li>Pare de classificar doces como "vilões".</li>
+                    <li>Troque o foco da restrição pela inclusão estratégica.</li>
+                    <li>Se escorregar, perdoe-se imediatamente. A culpa engorda; o alívio te põe de volta aos trilhos.
+                    </li>
+                  </ol>
+                </div>
+
+                <!-- Aba de Downloads / Anexos -->
+                <div id="lesson-downloads" class="details-tab-panel">
+                  <div class="downloads-grid">
+                    <div class="download-item-card">
+                      <div class="icon-wrap pdf">📊</div>
+                      <div class="download-info">
+                        <h5>Resumo Geral do Módulo 1</h5>
+                        <span>PDF • 1.2 MB</span>
+                      </div>
+                      <a href="#" class="btn btn-sm btn-accent"
+                        onclick="alert('Download simulado com sucesso!'); return false;">Baixar</a>
+                    </div>
+                    <div class="download-item-card">
+                      <div class="icon-wrap checklist">🛒</div>
+                      <div class="download-info">
+                        <h5>Checklist de Compras: A Despensa da Cozinha Fit</h5>
+                        <span>Imprimir / PDF • 800 KB</span>
+                      </div>
+                      <a href="#" class="btn btn-sm btn-accent"
+                        onclick="alert('Download simulado com sucesso!'); return false;">Baixar</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coluna Lateral de Monetização Interna (Upsell Invisível) & Comunidade -->
+          <div class="upsell-column">
+            <!-- Box de Order Bump / Upsell Interno Focado em LTV -->
+            <div class="upsell-card-vip premium-glow">
+              <div class="sparkles">✨ SUPER OFERTA DE UPGRADE ✨</div>
+              <h3>Mentoria Acompanhada VIP Doce Emagrecimento</h3>
+              <p>Quer ser acompanhada individualmente por uma nutricionista e ter um plano 100% customizado com receitas
+                de doces para o seu metabolismo?</p>
+              <div class="price-box">
+                <span class="old-price">De R$ 997</span>
+                <span class="new-price">12x R$ 49,70</span>
+              </div>
+              <button class="btn btn-primary btn-block animate-pulse" id="btn-trigger-upsell">Quero o Acompanhamento VIP
+                🚀</button>
+              <span class="offer-guarantee">🛡️ Garantia incondicional de 7 dias</span>
+            </div>
+
+            <!-- Comunidade / Box de Interação -->
+            <div class="comments-card">
+              <h4>💬 Comunidade VIP Dieta do Doce</h4>
+              <div class="comment-input-wrap">
+                <input type="text" id="new-comment-text" placeholder="Compartilhe suas vitórias ou dúvidas...">
+                <button id="btn-post-comment" class="btn btn-accent">Enviar</button>
+              </div>
+              <div class="comments-list" id="comments-list-box">
+                <div class="comment-item">
+                  <div class="comment-avatar">👨‍⚕️</div>
+                  <div class="comment-body">
+                    <div class="comment-meta">
+                      <strong>Dra. Marina (Nutri Dieta do Doce)</strong>
+                      <span>Há 2 horas</span>
+                    </div>
+                    <p>Seja bem-vinda ao nosso portal VIP! Coloque em prática as 3 Janelas Metabólicas já a partir do
+                      seu almoço de hoje. Conte comigo nessa jornada de liberdade nutricional!</p>
+                  </div>
+                </div>
+                <div class="comment-item">
+                  <div class="comment-avatar">🙋‍♀️</div>
+                  <div class="comment-body">
+                    <div class="comment-meta">
+                      <strong>Paula S.</strong>
+                      <span>Há 1 dia</span>
+                    </div>
+                    <p>Meninas, o Brigadeiro Fit de Colher do Módulo 4 salvou minha TPM ontem à noite! Juro, comi e fui
+                      dormir feliz sem peso na consciência e mantendo meu déficit calórico. Incrível demais!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA 2: PODCLASSES / AUDIO PLAYERS ================= -->
+      <section id="tab-podclasses" class="tab-panel">
+        <div class="section-desc">
+          <h2><i class="fa-solid fa-microphone"
+              style="color: var(--primary-strawberry); margin-right: 10px;"></i>Podclasses Exclusivas Dieta do Doce</h2>
+          <p>Áudios de apoio mental e estratégico de 3 a 5 minutos para escutar a caminho do trabalho, treino ou
+            momentos difíceis.</p>
+        </div>
+
+        <div class="podclasses-grid">
+          <!-- Card Podclass 1 -->
+          <div class="podclass-card">
+            <div class="podclass-tag"><i class="fa-solid fa-headphones" style="margin-right: 6px;"></i>Módulo 1</div>
+            <h3>O Fim da Culpa</h3>
+            <p class="podclass-summary">Por que você escorrega nas dietas restritivas e como contornar o "efeito do
+              proibido" usando acolhimento.</p>
+
+            <div class="custom-audio-player" data-audio-id="1">
+              <div class="audio-controls">
+                <button class="btn-play-pause">▶</button>
+                <div class="waveform-progress">
+                  <div class="waveform-bg"></div>
+                  <div class="waveform-fill" style="width: 0%;"></div>
+                </div>
+                <span class="audio-time">0:00 / 3:15</span>
+              </div>
+              <div class="audio-settings">
+                <span class="speed-label">Velocidade:</span>
+                <button class="btn-speed active" data-speed="1">1x</button>
+                <button class="btn-speed" data-speed="1.5">1.5x</button>
+                <button class="btn-speed" data-speed="2">2x</button>
+              </div>
+            </div>
+
+            <button class="btn btn-link btn-show-transcript" data-target="transcript-1"><i class="fa-solid fa-book"
+                style="margin-right: 6px;"></i>Ver Script / Transcrição</button>
+            <div id="transcript-1" class="podclass-transcript hidden">
+              <blockquote>
+                "Oi, amiga! Responda rápido pra mim: quantas vezes você acordou dizendo 'hoje eu não vou comer nenhum
+                doce', e às cinco da tarde já tinha devorado uma barra inteira? Eu sei, dói. Mas eu preciso que você
+                escute bem o que vou te falar: a culpa não é sua. E você não é fraca.
+                Quando você restringe totalmente o carboidrato e o açúcar, seu cérebro entra no que a ciência chama de
+                'efeito do proibido'. Você passa a pensar em doce o tempo inteiro! O cortisol, que é o hormônio do
+                estresse, vai lá nas alturas. E o que um corpo estressado pede? Açúcar.
+                O nosso protocolo não elimina o doce. Ele coloca o doce no lugar certo. A partir de hoje, pare de se
+                chicotear se você comer alguma coisa. A falha da dieta restritiva não prova sua fraqueza, prova apenas
+                que o seu corpo funciona como a natureza programou. A culpa engorda. O acolhimento emagrece. Vamos tirar
+                o doce do pedestal e trazer ele pro seu prato, na hora certa. Te vejo na próxima podclass."
+              </blockquote>
+            </div>
+          </div>
+
+          <!-- Card Podclass 2 -->
+          <div class="podclass-card">
+            <div class="podclass-tag"><i class="fa-solid fa-headphones" style="margin-right: 6px;"></i>Módulo 2</div>
+            <h3>As 3 Janelas Metabólicas</h3>
+            <p class="podclass-summary">O segredo científico do timing: os momentos perfeitos do seu dia onde o doce
+              vira pura energia muscular.</p>
+
+            <div class="custom-audio-player" data-audio-id="2">
+              <div class="audio-controls">
+                <button class="btn-play-pause">▶</button>
+                <div class="waveform-progress">
+                  <div class="waveform-bg"></div>
+                  <div class="waveform-fill" style="width: 0%;"></div>
+                </div>
+                <span class="audio-time">0:00 / 4:10</span>
+              </div>
+              <div class="audio-settings">
+                <span class="speed-label">Velocidade:</span>
+                <button class="btn-speed active" data-speed="1">1x</button>
+                <button class="btn-speed" data-speed="1.5">1.5x</button>
+                <button class="btn-speed" data-speed="2">2x</button>
+              </div>
+            </div>
+
+            <button class="btn btn-link btn-show-transcript" data-target="transcript-2"><i class="fa-solid fa-book"
+                style="margin-right: 6px;"></i>Ver Script / Transcrição</button>
+            <div id="transcript-2" class="podclass-transcript hidden">
+              <blockquote>
+                "Amiga, o doce só vira gordura se ele encontra o seu corpo de estômago vazio, dando aquele pico
+                assustador de insulina. Hoje eu vou te ensinar o segredo do Timing: As 3 Janelas Metabólicas.
+                Janela número 1: O Pós-Treino. Acabou de treinar? O seu músculo está vazio, implorando por energia. O
+                docinho aqui entra e vira combustível direto pro músculo, e não vai pra sua barriga!
+                Janela número 2: A Sobremesa Inteligente. Sabe aquele docinho que você come logo após o almoço? Ele é o
+                seu maior aliado! Porque o frango e a salada que você acabou de comer freiam a absorção desse doce.
+                Janela número 3: O Mini-Prazer Planejado. É aquele dia da semana, livre, que você come a sobremesa que
+                ama de verdade, só pra cuidar da sua alma e aliviar a pressão.
+                Sua missão de hoje: escolha a sua janela metabólica e coma a sua sobremesa de forma estratégica. Um
+                beijo e até o próximo áudio!"
+              </blockquote>
+            </div>
+          </div>
+
+          <!-- Card Podclass 3 -->
+          <div class="podclass-card">
+            <div class="podclass-tag"><i class="fa-solid fa-headphones" style="margin-right: 6px;"></i>Módulo 4</div>
+            <h3>O Kit Salva-Vidas</h3>
+            <p class="podclass-summary">Hormônios oscilando na TPM ou crise de ansiedade das 22h? Escolha a receita
+              certa ao invés de sofrer.</p>
+
+            <div class="custom-audio-player" data-audio-id="3">
+              <div class="audio-controls">
+                <button class="btn-play-pause">▶</button>
+                <div class="waveform-progress">
+                  <div class="waveform-bg"></div>
+                  <div class="waveform-fill" style="width: 0%;"></div>
+                </div>
+                <span class="audio-time">0:00 / 3:45</span>
+              </div>
+              <div class="audio-settings">
+                <span class="speed-label">Velocidade:</span>
+                <button class="btn-speed active" data-speed="1">1x</button>
+                <button class="btn-speed" data-speed="1.5">1.5x</button>
+                <button class="btn-speed" data-speed="2">2x</button>
+              </div>
+            </div>
+
+            <button class="btn btn-link btn-show-transcript" data-target="transcript-3"><i class="fa-solid fa-book"
+                style="margin-right: 6px;"></i>Ver Script / Transcrição</button>
+            <div id="transcript-3" class="podclass-transcript hidden">
+              <blockquote>
+                "Chegou aquela hora difícil. Ou você está de TPM com os hormônios oscilando, ou deu dez da noite e todo
+                o estresse do seu dia bateu de frente com a porta da geladeira. Amiga, escuta: não tente lutar contra
+                essa fome emocional com força de vontade, você vai perder. O truque é ser mais inteligente que ela!
+                Para a TPM: Cacau. Ele é a resposta do universo para a sua serotonina. Prepare o nosso 'Brigadeiro Fit
+                de Colher'. Ele vai saciar a sua vontade de doce com menos de 100 calorias, te dando um abraço e
+                baixando o cortisol.
+                Para a crise das 22h: Se o desespero bater à noite, nada de abrir o aplicativo de delivery. Vá pra
+                cozinha e faça o 'Bolinho de Caneca Fit'. Leva exatamente 2 minutos no micro-ondas. Ele conforta, enche
+                o estômago e você vai dormir em paz, acordando no dia seguinte linda e dentro do foco. Vai dar tudo
+                certo. Eu estou com você. Um super beijo!"
+              </blockquote>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA 3: CADERNO DE ATIVIDADES ================= -->
+      <section id="tab-exercises" class="tab-panel">
+        <div class="section-desc">
+          <h2><i class="fa-solid fa-book-open" style="color: var(--primary-strawberry); margin-right: 10px;"></i>Caderno
+            de Atividades Práticas & Checklist</h2>
+          <p>Registre seus gatilhos emocionais, anote seus diários e prepare a sua despensa fit inabalável. Suas
+            respostas ficam salvas localmente.</p>
+        </div>
+
+        <div class="exercises-layout">
+          <!-- Coluna da Esquerda: Exercícios Práticos -->
+          <div class="exercises-forms">
+            <!-- Exercício 1: Técnica STOP -->
+            <div class="exercise-card">
+              <div class="badge-exercise primary">Exercício 1</div>
+              <h3>A Técnica S.T.O.P. (Identificador de Gatilhos)</h3>
+              <p class="card-hint">Utilize este exercício sempre que bater aquela vontade irresistível de doce
+                emocional.</p>
+
+              <div class="stop-steps-list">
+                <div class="stop-step">
+                  <span class="number">S</span>
+                  <div>
+                    <strong>Pare (Stop):</strong>
+                    <p>Pare o que está fazendo por 2 minutos. Respire fundo 3 vezes.</p>
+                  </div>
+                </div>
+                <div class="stop-step">
+                  <span class="number">T</span>
+                  <div>
+                    <strong>Pergunte-se (Think):</strong>
+                    <p>"Isso é fome física de verdade (estômago roncando) ou eu estou frustrada/cansada/ansiosa?"</p>
+                  </div>
+                </div>
+                <div class="stop-step">
+                  <span class="number">O</span>
+                  <div>
+                    <strong>Observe & Decida (Observe):</strong>
+                    <p>Se for emoção, prepare um chá de camomila/mulungu ou use o Brigadeiro Fit rico em cacau. Se for
+                      fome física, coma uma proteína (ovo, grego) antes do docinho fit.</p>
+                  </div>
+                </div>
+                <div class="stop-step">
+                  <span class="number">P</span>
+                  <div>
+                    <strong>Prossiga (Proceed):</strong>
+                    <p>Coma com presença total e celebre a sua escolha consciente.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stop-form-input">
+                <label for="stop-reflection">Sua Reflexão S.T.O.P. do Momento:</label>
+                <textarea id="stop-reflection" rows="3"
+                  placeholder="O que você observou sobre a sua vontade de doce agora? (Ex: Estava ansiosa com a entrega do trabalho...)"></textarea>
+                <button id="btn-save-stop" class="btn btn-primary mt-2">Salvar Reflexão 💾</button>
+                <span id="stop-saved-toast" class="saved-toast hidden">✓ Salvo no Navegador!</span>
+              </div>
+            </div>
+
+            <!-- Exercício 2: Diário da Saciedade -->
+            <div class="exercise-card">
+              <div class="badge-exercise secondary">Exercício 2</div>
+              <h3>O Diário da Saciedade (Rastreio Emocional)</h3>
+              <p class="card-hint">Preencha 3 vezes na semana nos primeiros 15 dias para mapear sua relação emocional
+                com o doce fit.</p>
+
+              <form id="satiety-form" class="satiety-form">
+                <div class="input-row">
+                  <div class="input-group">
+                    <label for="satiety-food">O que eu comi?</label>
+                    <input type="text" id="satiety-food" placeholder="Ex: 1 fatia de Torta Fit de Aveia" required>
+                  </div>
+                  <div class="input-group">
+                    <label for="satiety-feeling-before">O que eu estava sentindo ANTES?</label>
+                    <input type="text" id="satiety-feeling-before" placeholder="Ex: Estresse acumulado do chefe"
+                      required>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label for="satiety-feeling-after">Como me sinto 20 minutos depois?</label>
+                  <input type="text" id="satiety-feeling-after" placeholder="Ex: Acolhida, saciada e zero culpa!"
+                    required>
+                </div>
+                <button type="submit" class="btn btn-accent">Adicionar ao Diário 📝</button>
+              </form>
+
+              <!-- Lista de Entradas do Diário -->
+              <div class="satiety-logs-container">
+                <h4>Seus Registros Anteriores:</h4>
+                <div id="satiety-logs-list" class="satiety-logs-list">
+                  <p class="no-records-msg">Você ainda não adicionou nenhum registro ao seu Diário.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Plano de Ação 7 Dias -->
+            <div class="exercise-card">
+              <div class="badge-exercise accent">Plano de Ação</div>
+              <h3>Seus Primeiros 7 Dias</h3>
+              <ul class="styled-action-list">
+                <li><span class="day-badge">Dia 1</span> Vá ao mercado e monte sua despensa fit com a Checklist ao lado.
+                </li>
+                <li><span class="day-badge">Dia 2</span> Prepare um lote de Cookies Fit e armazene congelado para a
+                  semana.</li>
+                <li><span class="day-badge">Dia 3</span> Almoce bem e faça sua primeira <strong>Sobremesa
+                    Inteligente</strong> com atenção plena.</li>
+                <li><span class="day-badge">Dia 4-7</span> Substitua todo o açúcar de mesa por Eritritol/Xilitol e anote
+                  vitórias na geladeira!</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Coluna da Direita: Checklist de Compras -->
+          <div class="exercises-sidebar">
+            <div class="checklist-card">
+              <div class="checklist-header">
+                <h3><i class="fa-solid fa-cart-shopping"
+                    style="color: var(--accent-honey); margin-right: 8px;"></i>Checklist de Compras</h3>
+                <span>A Despensa Fit Inabalável</span>
+              </div>
+              <p class="checklist-desc">Os 12 Ingredientes Mágicos indispensáveis na sua cozinha:</p>
+
+              <ul class="checklist-items" id="grocery-checklist">
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="0">
+                    <span class="checkmark"></span>
+                    Farinha de Aveia e Amêndoas
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="1">
+                    <span class="checkmark"></span>
+                    Adoçantes: Eritritol / Xilitol
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="2">
+                    <span class="checkmark"></span>
+                    Leite de Coco / Amêndoa
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="3">
+                    <span class="checkmark"></span>
+                    Pasta de Amendoim integral
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="4">
+                    <span class="checkmark"></span>
+                    Iogurte Grego sem açúcar
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="5">
+                    <span class="checkmark"></span>
+                    Chocolate 70% Cacau
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="6">
+                    <span class="checkmark"></span>
+                    Queijo Cottage
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="7">
+                    <span class="checkmark"></span>
+                    Leite Condensado de Coco
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="8">
+                    <span class="checkmark"></span>
+                    Gelatina Sem Sabor
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="9">
+                    <span class="checkmark"></span>
+                    Tâmaras
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="10">
+                    <span class="checkmark"></span>
+                    Cacau em pó 100%
+                  </label>
+                </li>
+                <li>
+                  <label class="checkbox-container">
+                    <input type="checkbox" data-index="11">
+                    <span class="checkmark"></span>
+                    Banana (para manter congelada)
+                  </label>
+                </li>
+              </ul>
+
+              <div class="checklist-progress">
+                <div class="progress-labels">
+                  <span>Itens Adquiridos</span>
+                  <span id="checklist-percent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div id="checklist-bar-fill" class="progress-bar-fill accent" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA 3.5: CONQUISTAS E BÔNUS ================= -->
+      <section id="tab-achievements" class="tab-panel">
+        <div class="section-desc">
+          <h2><i class="fa-solid fa-trophy" style="color: var(--primary-strawberry); margin-right: 10px;"></i>Suas
+            Conquistas & Bônus VIP</h2>
+          <p>Complete as tarefas práticas do seu protocolo para ganhar insígnias exclusivas e destravar materiais
+            complementares secretos!</p>
+        </div>
+
+        <!-- Grid de Medalhas / Conquistas -->
+        <div class="achievements-section-title"><i class="fa-solid fa-medal"
+            style="color: var(--accent-honey); margin-right: 8px;"></i>Suas Medalhas de Progresso</div>
+        <div class="achievements-grid">
+          <!-- Medalha 1: Onboarding -->
+          <div class="achievement-card locked" id="ach-onboarding">
+            <div class="achievement-icon"><i class="fa-solid fa-rocket" style="color: var(--accent-honey);"></i></div>
+            <div class="achievement-info">
+              <h3>Primeiros Passos</h3>
+              <p>Assistir à aula de Boas-Vindas e concluir o quiz de Onboarding.</p>
+              <span class="ach-status-label">Trancado</span>
+            </div>
+          </div>
+
+          <!-- Medalha 2: Checklist -->
+          <div class="achievement-card locked" id="ach-checklist">
+            <div class="achievement-icon"><i class="fa-solid fa-cart-shopping" style="color: var(--accent-honey);"></i>
+            </div>
+            <div class="achievement-info">
+              <h3>Despensa Blindada</h3>
+              <p>Marcar pelo menos 6 ingredientes fit essenciais na sua Checklist.</p>
+              <span class="ach-status-label">Trancado</span>
+            </div>
+          </div>
+
+          <!-- Medalha 3: Diário -->
+          <div class="achievement-card locked" id="ach-diary">
+            <div class="achievement-icon"><i class="fa-solid fa-pen-to-square" style="color: var(--accent-honey);"></i>
+            </div>
+            <div class="achievement-info">
+              <h3>Diário Iniciado</h3>
+              <p>Escrever seu primeiro relato no Diário de Saciedade Emocional.</p>
+              <span class="ach-status-label">Trancado</span>
+            </div>
+          </div>
+
+          <!-- Medalha 4: 50% Curso -->
+          <div class="achievement-card locked" id="ach-half">
+            <div class="achievement-icon"><i class="fa-solid fa-chart-line" style="color: var(--accent-honey);"></i>
+            </div>
+            <div class="achievement-info">
+              <h3>Meio do Caminho</h3>
+              <p>Concluir 50% de todas as aulas da área de membros.</p>
+              <span class="ach-status-label">Trancado (0/7)</span>
+            </div>
+          </div>
+
+          <!-- Medalha 5: 100% Curso -->
+          <div class="achievement-card locked" id="ach-master">
+            <div class="achievement-icon"><i class="fa-solid fa-crown" style="color: var(--accent-honey);"></i></div>
+            <div class="achievement-info">
+              <h3>Mestre Dieta do Doce</h3>
+              <p>Concluir 100% das aulas e liberar seu Certificado VIP Premium!</p>
+              <span class="ach-status-label">Trancado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção de Bônus Secretos Desbloqueáveis -->
+        <div class="achievements-section-title mt-2"><i class="fa-solid fa-gift"
+            style="color: var(--primary-strawberry); margin-right: 8px;"></i>Bônus Complementares Ocultos</div>
+        <div class="bonus-grid">
+          <!-- Renderizado dinamicamente via JS (renderUserBonuses) -->
+          <div style="text-align:center; padding:2rem; color:var(--text-creme-muted); width: 100%;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; margin-bottom:1rem;"></i><br>Carregando
+            bônus...
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: COMUNIDADE (FEED GLOBAL) ================= -->
+      <section id="tab-community" class="tab-panel">
+        <div class="section-desc">
+          <h2><i class="fa-solid fa-users" style="color: var(--primary-strawberry); margin-right: 10px;"></i>Comunidade VIP</h2>
+          <p>Veja o que as outras alunas estão comentando, compartilhe suas experiências e tire dúvidas!</p>
+        </div>
+
+        <!-- Feed de Comentários Global -->
+        <div class="community-feed-container">
+          <div class="community-feed-header">
+            <h3><i class="fa-solid fa-comments" style="color: var(--accent-honey); margin-right: 8px;"></i>Feed de Comentários</h3>
+            <p class="feed-subtitle">Últimos 100 comentários de todas as aulas</p>
+          </div>
+
+          <!-- Lista de Comentários -->
+          <div id="community-feed-list" class="community-feed-list">
+            <div style="text-align:center; padding:3rem; color:var(--text-creme-muted);">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; margin-bottom:1rem;"></i><br>
+              Carregando comentários da comunidade...
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA 4: DEVELOPER WEBHOOK SIMULATOR & LOGS ================= -->
+      <section id="tab-webhook" class="tab-panel">
+        <div class="section-desc">
+          <h2><i class="fa-solid fa-bug" style="color: var(--primary-strawberry); margin-right: 10px;"></i>Simulador &
+            Painel do Webhook Hotmart</h2>
+          <p>Esta ferramenta permite testar e debugar a criação automática de contas e o funcionamento integrado com a
+            Hotmart. Quando o Webhook envia uma compra com status <strong>approved</strong>, o backend cria a conta
+            instantaneamente com a senha padrão <code>doce123</code>.</p>
+        </div>
+
+        <div class="webhook-grid">
+          <!-- Painel de Simulação -->
+          <div class="webhook-card">
+            <h3><i class="fa-solid fa-paper-plane" style="color: var(--accent-honey); margin-right: 8px;"></i>Enviar
+              Requisição Simulada (POST)</h3>
+            <p class="card-hint">Simule uma venda sendo aprovada na Hotmart para ver o cadastro automático em tempo
+              real.</p>
+
+            <form id="webhook-simulator-form" class="webhook-sim-form">
+              <div class="input-group">
+                <label for="sim-name">Nome do Comprador</label>
+                <input type="text" id="sim-name" placeholder="Ex: Maria Souza" value="Maria Souza" required>
+              </div>
+
+              <div class="input-group">
+                <label for="sim-email">E-mail do Comprador</label>
+                <input type="email" id="sim-email" placeholder="Ex: maria@gmail.com" value="maria@gmail.com" required>
+              </div>
+
+              <div class="input-group">
+                <label for="sim-status">Status da Transação</label>
+                <select id="sim-status" class="styled-select">
+                  <option value="approved">approved (Aprovada - Libera Acesso)</option>
+                  <option value="complete">complete (Completa - Libera Acesso)</option>
+                  <option value="refunded">refunded (Reembolsada - Bloqueia Acesso)</option>
+                  <option value="chargeback">chargeback (Chargeback - Bloqueia Acesso)</option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label for="sim-platform">Simular Formato de Plataforma</label>
+                <select id="sim-platform" class="styled-select">
+                  <option value="hotmart">Hotmart (Payload Padrão)</option>
+                  <option value="hotmart_v2">Hotmart API v2 (Estrutura Aninhada)</option>
+                  <option value="kiwify">Kiwify / Outras (Parâmetros Planos)</option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">Enviar Payload <i class="fa-solid fa-rocket"
+                  style="margin-left: 6px;"></i></button>
+            </form>
+          </div>
+
+          <!-- Console de Logs em tempo real -->
+          <div class="webhook-card logs-card">
+            <div class="logs-header">
+              <h3><i class="fa-solid fa-terminal" style="color: var(--accent-honey); margin-right: 8px;"></i>Histórico
+                de Transações Recentes (Backend logs)</h3>
+              <button id="btn-clear-webhook-logs" class="btn btn-sm btn-secondary">Limpar Logs</button>
+            </div>
+            <p class="card-hint">Logs retornados diretamente do banco e do endpoint <code>/api/webhook-logs</code>.</p>
+
+            <div id="webhook-logs-console" class="webhook-logs-console">
+              <div class="log-empty">Aguardando receber dados de webhook... Envie um teste ao lado.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="webhook-info-box">
+          <h4><i class="fa-regular fa-lightbulb" style="color: var(--accent-honey); margin-right: 8px;"></i>Como apontar
+            a Hotmart de verdade para cá em produção?</h4>
+          <ol>
+            <li>Exponha sua máquina local para a internet usando uma ferramenta como <strong>ngrok</strong> (rodando:
+              <code>ngrok http 3000</code>).
+            </li>
+            <li>Copie a URL HTTPS gerada pelo ngrok (ex: <code>https://abcdef.ngrok-free.app</code>).</li>
+            <li>No painel da Hotmart, acesse <strong>Ferramentas > Webhook (API e Notificações)</strong>.</li>
+            <li>Crie uma nova configuração, selecione o evento <strong>"Compra Aprovada"</strong> e cole sua URL com o
+              caminho do webhook: <code>https://abcdef.ngrok-free.app/api/webhook/hotmart</code>.</li>
+            <li>Pronto! Qualquer venda gerada na Hotmart cadastrará sua aluna em tempo real no banco local, permitindo
+              que ela logue imediatamente com e-mail e a senha <code>doce123</code>.</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ================= ABA 5: PAINEL DE CONTROLE DO ADMINISTRADOR (ADMIN ONLY) ================= -->
+      <section id="tab-admin" class="tab-panel">
+        <div class="section-desc">
+          <h2><i class="fa-solid fa-screwdriver-wrench"
+              style="color: var(--primary-strawberry); margin-right: 10px;"></i>Painel de Controle do Administrador</h2>
+          <p>Gerencie abas da área de membros, envie comunicados gerais no banner e administre todas as alunas
+            cadastradas.</p>
+        </div>
+
+        <div class="webhook-grid">
+          <!-- Bloco 1: Controle de Recursos (Toggles) -->
+          <div class="webhook-card">
+            <h3><i class="fa-solid fa-lock" style="color: var(--accent-honey); margin-right: 8px;"></i>Controle de
+              Elementos & Recursos</h3>
+            <p class="card-hint">Ative as chaves abaixo para bloquear o acesso desses elementos para as alunas comuns
+              (mostrará aviso de "Ainda não disponível").</p>
+
+            <div class="admin-toggles-list"
+              style="display: flex; flex-direction: column; gap: 15px; margin-top: 1.5rem;">
+              <div class="admin-toggle-item"
+                style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                <div>
+                  <strong><i class="fa-solid fa-microphone" style="margin-right: 6px;"></i>Podclasses de Apoio</strong>
+                  <p style="font-size: 0.75rem; color: var(--text-creme-muted); margin-top: 2px;">Bloqueia a aba de
+                    Podclasses em áudio.</p>
+                </div>
+                <label class="switch-container"
+                  style="position: relative; display: inline-block; width: 46px; height: 24px;">
+                  <input type="checkbox" id="toggle-block-podclasses" style="opacity: 0; width: 0; height: 0;">
+                  <span class="slider-round"
+                    style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--glass-border);"></span>
+                </label>
+              </div>
+
+              <div class="admin-toggle-item"
+                style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                <div>
+                  <strong><i class="fa-solid fa-book-open" style="margin-right: 6px;"></i>Caderno de Atividades</strong>
+                  <p style="font-size: 0.75rem; color: var(--text-creme-muted); margin-top: 2px;">Bloqueia a aba de
+                    Exercícios, Diário e Checklist.</p>
+                </div>
+                <label class="switch-container"
+                  style="position: relative; display: inline-block; width: 46px; height: 24px;">
+                  <input type="checkbox" id="toggle-block-exercises" style="opacity: 0; width: 0; height: 0;">
+                  <span class="slider-round"
+                    style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--glass-border);"></span>
+                </label>
+              </div>
+
+              <div class="admin-toggle-item"
+                style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                <div>
+                  <strong><i class="fa-solid fa-trophy" style="margin-right: 6px;"></i>Conquistas & Bônus VIP</strong>
+                  <p style="font-size: 0.75rem; color: var(--text-creme-muted); margin-top: 2px;">Bloqueia a aba de
+                    Medalhas e bônus ocultos.</p>
+                </div>
+                <label class="switch-container"
+                  style="position: relative; display: inline-block; width: 46px; height: 24px;">
+                  <input type="checkbox" id="toggle-block-achievements" style="opacity: 0; width: 0; height: 0;">
+                  <span class="slider-round"
+                    style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--glass-border);"></span>
+                </label>
+              </div>
+
+              <div class="admin-toggle-item"
+                style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                <div>
+                  <strong><i class="fa-solid fa-comments" style="margin-right: 6px;"></i>Comunidade VIP
+                    (Comentários)</strong>
+                  <p style="font-size: 0.75rem; color: var(--text-creme-muted); margin-top: 2px;">Bloqueia a seção de
+                    comentários lateral das aulas.</p>
+                </div>
+                <label class="switch-container"
+                  style="position: relative; display: inline-block; width: 46px; height: 24px;">
+                  <input type="checkbox" id="toggle-block-comments" style="opacity: 0; width: 0; height: 0;">
+                  <span class="slider-round"
+                    style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--glass-border);"></span>
+                </label>
+              </div>
+
+              <div class="admin-toggle-item"
+                style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                <div>
+                  <strong><i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 6px;"></i>Card de Upsell /
+                    Mentoria</strong>
+                  <p style="font-size: 0.75rem; color: var(--text-creme-muted); margin-top: 2px;">Bloqueia o card de
+                    Upgrade VIP na coluna lateral.</p>
+                </div>
+                <label class="switch-container"
+                  style="position: relative; display: inline-block; width: 46px; height: 24px;">
+                  <input type="checkbox" id="toggle-block-upsell" style="opacity: 0; width: 0; height: 0;">
+                  <span class="slider-round"
+                    style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--glass-border);"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloco 2: Comunicados / Banner de Aviso -->
+          <div class="webhook-card">
+            <h3><i class="fa-solid fa-bullhorn" style="color: var(--accent-honey); margin-right: 8px;"></i>Comunicado
+              Global & Banner</h3>
+            <p class="card-hint">Escreva um aviso para fixar no topo do portal de todas as alunas normais em tempo real.
+            </p>
+
+            <div class="admin-announcement-form"
+              style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 15px;">
+              <div class="input-group">
+                <label for="admin-announcement-input">Mensagem do Comunicado</label>
+                <textarea id="admin-announcement-input" rows="4"
+                  style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:10px; color:#fff;"
+                  placeholder="Ex: Dra. Marina fará uma mentoria de tira-dúvidas ao vivo na quinta-feira às 19h no zoom!"></textarea>
+              </div>
+              <button class="btn btn-accent" id="btn-save-announcement"><i class="fa-solid fa-floppy-disk"
+                  style="margin-right: 6px;"></i>Fixar Comunicado Geral</button>
+              <button class="btn btn-secondary btn-sm" id="btn-clear-announcement"><i class="fa-solid fa-xmark"
+                  style="margin-right: 6px;"></i>Remover Banner de Avisos</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloco 3: CRM/Gerenciador de Alunas (Tabela) -->
+        <div class="webhook-info-box"
+          style="border-left-color: var(--primary-strawberry); padding: 2rem; margin-top: 2.5rem; background: var(--card-glass);">
+          <h3 style="font-size: 1.3rem; color: #fff; margin-bottom: 5px; font-family: var(--font-headings);"><i
+              class="fa-solid fa-users" style="color: var(--accent-honey); margin-right: 8px;"></i>Gerenciador Geral de
+            Alunas (CRM)</h3>
+          <p style="color: var(--text-creme-muted); font-size: 0.88rem; margin-bottom: 1.5rem;">Lista ativa de usuárias
+            cadastradas localmente no banco. Crie acessos manuais ou gerencie o status das alunas.</p>
+
+          <!-- Formulário de Criação Manual -->
+          <form id="admin-create-user-form"
+            style="display: flex; flex-wrap: wrap; gap: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: var(--border-radius-md); border: 1px solid var(--glass-border); margin-bottom: 20px; align-items: flex-end;">
+            <div class="input-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+              <label style="font-size: 0.78rem;">Nome Completo</label>
+              <input type="text" id="admin-create-name" placeholder="Ex: Joana Ferreira"
+                style="padding: 0.6rem 1rem; font-size: 0.9rem;" required>
+            </div>
+            <div class="input-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+              <label style="font-size: 0.78rem;">E-mail de Compra</label>
+              <input type="email" id="admin-create-email" placeholder="Ex: joana@gmail.com"
+                style="padding: 0.6rem 1rem; font-size: 0.9rem;" required>
+            </div>
+            <div class="input-group" style="min-width: 140px; margin-bottom: 0;">
+              <label style="font-size: 0.78rem;">Nível de Acesso</label>
+              <select id="admin-create-role" class="styled-select"
+                style="padding: 0.6rem 1rem; font-size: 0.9rem; height: 43px;">
+                <option value="student">student (Aluna VIP)</option>
+                <option value="admin">admin (Administrador)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary"
+              style="padding: 0.62rem 1.5rem; height: 43px; font-size: 0.9rem;"><i class="fa-solid fa-user-plus"
+                style="margin-right: 6px;"></i>Cadastrar Acesso</button>
+          </form>
+
+          <!-- Tabela de Alunas -->
+          <div
+            style="overflow-x: auto; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid var(--glass-border);">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--glass-border); background: rgba(255,255,255,0.03);">
+                  <th style="padding: 12px 15px; color: var(--accent-honey); font-family: var(--font-headings);">Nome
+                  </th>
+                  <th style="padding: 12px 15px; color: var(--accent-honey); font-family: var(--font-headings);">E-mail
+                  </th>
+                  <th style="padding: 12px 15px; color: var(--accent-honey); font-family: var(--font-headings);">Status
+                  </th>
+                  <th style="padding: 12px 15px; color: var(--accent-honey); font-family: var(--font-headings);">Origem
+                  </th>
+                  <th style="padding: 12px 15px; color: var(--accent-honey); font-family: var(--font-headings);">Acesso
+                  </th>
+                  <th
+                    style="padding: 12px 15px; color: var(--accent-honey); font-family: var(--font-headings); text-align: center;">
+                    Ações</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table-body">
+                <!-- Injetado dinamicamente via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== SEÇÃO: GERENCIAMENTO DE CONTEÚDO DO CURSO (ADMIN) ====== -->
+      <!-- NOTE: Injected as part of tab-admin, this section is shown only below the user table -->
+      <div id="admin-course-section" style="padding: 0 2rem 2rem; margin-top:2.5rem; display:none;">
+        <div
+          style="background:var(--card-glass); border:1px solid var(--glass-border); border-radius:16px; padding:2rem;">
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h3 style="font-size:1.3rem; color:#fff; margin-bottom:4px; font-family:var(--font-headings);">
+                <i class="fa-solid fa-clapperboard" style="color:var(--accent-honey); margin-right:8px;"></i>Gerenciar
+                Conteúdo do Curso
+              </h3>
+              <p style="color:var(--text-creme-muted); font-size:0.88rem;">Crie, edite e organize módulos e aulas.
+                Adicione vídeos por iframe, upload de arquivos e links externos.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openModuleModal()">
+              <i class="fa-solid fa-folder-plus" style="margin-right:8px;"></i>Novo Módulo
+            </button>
+          </div>
+          <div id="admin-course-manager">
+            <!-- Renderizado dinamicamente via JS (renderAdminCourseManager) -->
+            <div style="text-align:center; padding:2rem; color:var(--text-creme-muted);">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; margin-bottom:1rem;"></i><br>Carregando
+              módulos...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTE: Injected as part of tab-admin, this section is shown only below the user table -->
+      <div id="admin-bonus-section" style="padding: 0 2rem 2rem; margin-top:2.5rem; display:none;">
+        <div
+          style="background:var(--card-glass); border:1px solid var(--glass-border); border-radius:16px; padding:2rem;">
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h3 style="font-size:1.3rem; color:#fff; margin-bottom:4px; font-family:var(--font-headings);">
+                <i class="fa-solid fa-gift" style="color:var(--accent-honey); margin-right:8px;"></i>Gerenciar Bônus
+                Ocultos
+              </h3>
+              <p style="color:var(--text-creme-muted); font-size:0.88rem;">Crie e edite bônus complementares, defina as
+                regras de desbloqueio e suba materiais.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openBonusModal()">
+              <i class="fa-solid fa-plus" style="margin-right:8px;"></i>Novo Bônus
+            </button>
+          </div>
+          <div id="admin-bonus-manager">
+            <!-- Renderizado dinamicamente via JS (renderAdminBonusManager) -->
+            <div style="text-align:center; padding:2rem; color:var(--text-creme-muted);">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; margin-bottom:1rem;"></i><br>Carregando
+              bônus...
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ================= MODAL: CHECKOUT SIMULADO DE UPSELL ================= -->
+  <div id="checkout-modal" class="modal-overlay hidden">
+    <div class="checkout-card premium-glow">
+      <button class="btn-close-modal" id="btn-close-checkout"><i class="fa-solid fa-xmark"></i></button>
+      <div class="checkout-header">
+        <span class="checkout-badge"><i class="fa-solid fa-bolt"
+            style="color: var(--accent-honey); margin-right: 4px;"></i>ACESSO IMEDIATO</span>
+        <h2>Upgrade da Mentoria VIP Doce <i class="fa-solid fa-crown"
+            style="color: var(--accent-honey); margin-left: 4px;"></i></h2>
+        <p>Seja acompanhada individualmente por uma nutricionista e tenha um plano 100% customizado</p>
+      </div>
+
+      <div class="checkout-content">
+        <div class="checkout-payment-selector">
+          <button class="pay-method-btn active" id="btn-pay-pix"><i class="fa-solid fa-mobile-screen-button"
+              style="margin-right: 6px;"></i>Pagar com PIX (Rápido)</button>
+          <button class="pay-method-btn" id="btn-pay-card"><i class="fa-regular fa-credit-card"
+              style="margin-right: 6px;"></i>Cartão de Crédito</button>
+        </div>
+
+        <!-- Seção Pix -->
+        <div id="checkout-pix-section" class="pay-section active">
+          <p class="pay-desc">Escaneie o QR Code ou copie a chave abaixo para liberar seu acesso VIP na hora:</p>
+          <div class="qr-code-placeholder">
+            <div class="qr-code-fake">
+              <svg width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="2" y="2" width="6" height="6" rx="1" />
+                <rect x="16" y="2" width="6" height="6" rx="1" />
+                <rect x="2" y="16" width="6" height="6" rx="1" />
+                <rect x="16" y="16" width="6" height="6" rx="1" />
+                <path d="M9 4h6M4 9v6M9 15h6M15 9v6M20 9v6" />
+              </svg>
+            </div>
+            <div class="verification-timer">
+              <span>Simulando confirmação em: <strong id="checkout-countdown">4s</strong></span>
+              <div class="mini-spinner"></div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-block" id="btn-copy-pix"><i class="fa-solid fa-copy"
+              style="margin-right: 6px;"></i>Copiar Chave Pix Copia e Cola</button>
+        </div>
+
+        <!-- Seção Cartão -->
+        <div id="checkout-card-section" class="pay-section">
+          <form id="fake-checkout-form" class="checkout-form">
+            <div class="input-group">
+              <label>Número do Cartão</label>
+              <input type="text" placeholder="4444 5555 6666 7777" required>
+            </div>
+            <div class="input-row">
+              <div class="input-group">
+                <label>Vencimento</label>
+                <input type="text" placeholder="MM/AA" required>
+              </div>
+              <div class="input-group">
+                <label>CVV</label>
+                <input type="password" placeholder="***" required>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>Nome no Cartão</label>
+              <input type="text" placeholder="Maria Souza" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Aprovar Compra e Desbloquear Mentoria <i
+                class="fa-solid fa-circle-check" style="margin-left: 6px;"></i></button>
+          </form>
+        </div>
+      </div>
+
+      <div class="checkout-footer">
+        <span><i class="fa-solid fa-shield-halved" style="color: var(--accent-honey); margin-right: 6px;"></i>Transação
+          100% Protegida e Simulada</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CERTIFICADO VIP PREMIUM ================= -->
+  <div id="certificate-modal" class="modal-overlay hidden">
+    <div class="certificate-wrapper">
+      <button class="btn-close-modal" id="btn-close-certificate"><i class="fa-solid fa-xmark"></i></button>
+
+      <!-- Card Principal do Diploma para visualização e impressão -->
+      <div class="certificate-card" id="printable-certificate">
+        <div class="cert-border-outer">
+          <div class="cert-border-inner">
+            <div class="cert-header">
+              <div class="cert-logo"><i class="fa-solid fa-cookie-bite"
+                  style="color: var(--primary-strawberry); margin-right: 6px;"></i>DIETA DO DOCE VIP</div>
+              <h1>CERTIFICADO DE TRANSFORMAÇÃO</h1>
+              <p>Concedido à aluna que completou com excelência a sua jornada de emagrecimento consciente e feliz.</p>
+            </div>
+
+            <div class="cert-recipient">
+              <span class="cert-label">Certificamos com muito orgulho que</span>
+              <h2 id="cert-student-name">ALUNA DE SUCESSO</h2>
+              <div class="cert-line"></div>
+              <p class="cert-text">concluiu com êxito todas as etapas do <strong>Protocolo da Satisfação
+                  Estratégica™</strong>, rompendo definitivamente com o terrorismo nutricional e conquistando sua
+                liberdade alimentar de forma saudável, leve e saborosa.</p>
+            </div>
+
+            <div class="cert-footer">
+              <div class="cert-signature-box">
+                <div class="signature">Sua nutri</div>
+                <span class="signature-label">Antigravity Elite AI</span>
+              </div>
+              <div class="cert-seal">
+                <div class="seal-inner">VIP <i class="fa-solid fa-star" style="color: var(--accent-honey);"></i></div>
+              </div>
+              <div class="cert-signature-box">
+                <div class="signature">Dra. Marina Nutri</div>
+                <span class="signature-label">Marina (Nutricionista Dieta do Doce)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações do Certificado -->
+      <div class="cert-actions">
+        <div class="input-group text-center" style="text-align: center;">
+          <label for="cert-input-name" style="color: #fff; display: block; margin-bottom: 5px;">Confirme seu Nome
+            Completo para o Certificado:</label>
+          <input type="text" id="cert-input-name" value="Maria Souza"
+            style="max-width: 320px; margin: 5px auto; text-align: center;">
+        </div>
+        <div class="cert-buttons" style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+          <button class="btn btn-primary" id="btn-print-cert"><i class="fa-solid fa-print"
+              style="margin-right: 6px;"></i>Imprimir / Salvar PDF</button>
+          <button class="btn btn-secondary" id="btn-close-cert-btn">Fechar Janela</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+
+</html>

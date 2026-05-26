@@ -1,0 +1,51 @@
+[
+    {
+        "id":  1,
+        "title":  "5 Brigadeiros Ocultos",
+        "description":  "Receitas secretas ricas em cacau e gordura boa para curar a TPM.",
+        "icon":  "fa-book",
+        "unlock_hint":  "Primeiros Passos \u003ci class=\"fa-solid fa-rocket\" style=\"font-size: 0.8rem; margin-left: 2px;\"\u003e\u003c/i\u003e",
+        "unlock_achievement_id":  "ach-first-step",
+        "file_url":  "",
+        "action_text":  "Download PDF \u003ci class=\"fa-solid fa-download\" style=\"margin-left: 4px;\"\u003e\u003c/i\u003e",
+        "release_days":  0
+    },
+    {
+        "id":  2,
+        "title":  "Chás Anti-Ansiedade",
+        "description":  "Fórmulas de chás da noite para neutralizar a fome de geladeira às 22h.",
+        "icon":  "fa-mug-hot",
+        "unlock_hint":  "Diário Iniciado \u003ci class=\"fa-solid fa-pen-to-square\" style=\"font-size: 0.8rem; margin-left: 2px;\"\u003e\u003c/i\u003e",
+        "unlock_achievement_id":  "ach-diary",
+        "file_url":  "",
+        "action_text":  "Download PDF \u003ci class=\"fa-solid fa-download\" style=\"margin-left: 4px;\"\u003e\u003c/i\u003e",
+        "release_days":  0
+    },
+    {
+        "id":  3,
+        "title":  "Certificado VIP Oficial",
+        "description":  "Diploma assinado e chancelado pela nutricionista da holding.",
+        "icon":  "fa-graduation-cap",
+        "unlock_hint":  "Mestre Dieta do Doce \u003ci class=\"fa-solid fa-crown\" style=\"font-size: 0.8rem; margin-left: 2px;\"\u003e\u003c/i\u003e",
+        "unlock_achievement_id":  "ach-master",
+        "file_url":  "certificate",
+        "action_text":  "Ver Certificado \u003ci class=\"fa-solid fa-award\" style=\"margin-left: 4px;\"\u003e\u003c/i\u003e",
+        "release_days":  0
+    },
+    {
+        "id":  1779772512173,
+        "title":  "Test",
+        "release_days":  0
+    },
+    {
+        "unlock_hint":  "Adquira no Checkout",
+        "id":  4,
+        "action_text":  "Comprar Agora",
+        "description":  "Garanta agora mesmo o seu Order Bump especial.",
+        "icon":  "fa-star",
+        "release_days":  0,
+        "unlock_achievement_id":  "order_bump_7816706",
+        "title":  "Order Bump Exclusivo",
+        "file_url":  "https://go.hotmart.com/V106001570R?dp=1"
+    }
+]

@@ -1,4 +1,4 @@
-fanode_modules/
+node_modules/
 .env
 admin_config.json
 users.json

@@ -248,10 +248,11 @@ function showApp(user) {
   // Lógica de Visualização do Admin e Desenvolvedor
   const adminBtn = document.getElementById('sidebar-admin-btn');
   const webhookBtn = document.getElementById('sidebar-webhook-btn');
-  if (user.role === 'admin') {
+  const isAdminRole = ['admin', 'ceo', 'coo'].includes(user.role);
+  if (isAdminRole) {
     if (adminBtn) adminBtn.classList.remove('hidden');
     if (webhookBtn) webhookBtn.classList.remove('hidden');
-    welcomeTitle.innerHTML = `Painel do Administrador <i class="fa-solid fa-screwdriver-wrench"></i> <span class="badge" style="background:var(--accent-honey); color:var(--bg-deep-cocoa);">ADMIN</span>`;
+    welcomeTitle.innerHTML = `Painel do Administrador <i class="fa-solid fa-screwdriver-wrench"></i> <span class="badge" style="background:var(--accent-honey); color:var(--bg-deep-cocoa);">${user.role.toUpperCase()}</span>`;
   } else {
     if (adminBtn) adminBtn.classList.add('hidden');
     if (webhookBtn) webhookBtn.classList.add('hidden');
@@ -679,7 +680,7 @@ function renderComments(comments) {
   }
 
   const currentUser = JSON.parse(sessionStorage.getItem('user_session'))?.user;
-  const isCurrentUserAdmin = currentUser && currentUser.role === 'admin';
+  const isCurrentUserAdmin = currentUser && ['admin', 'ceo', 'coo'].includes(currentUser.role);
 
   commentsListBox.innerHTML = comments.map(comment => {
     const initials = comment.user_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -800,7 +801,7 @@ function renderCommunityFeed(comments) {
   }
 
   const currentUser = JSON.parse(sessionStorage.getItem('user_session'))?.user;
-  const isCurrentUserAdmin = currentUser && currentUser.role === 'admin';
+  const isCurrentUserAdmin = currentUser && ['admin', 'ceo', 'coo'].includes(currentUser.role);
 
   feedList.innerHTML = comments.map(comment => {
     const initials = comment.user_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -1467,7 +1468,7 @@ function setupPremiumLXDEngine() {
     extendAdminDashboardListeners();
   }
   const session = JSON.parse(sessionStorage.getItem('user_session'));
-  if (session && session.user && session.user.role === 'admin') {
+  if (session && session.user && ['admin', 'ceo', 'coo'].includes(session.user.role)) {
     if (typeof loadAdminUsersTable === 'function') {
       loadAdminUsersTable();
     }
@@ -2105,7 +2106,7 @@ function applyBlockOverlay(elementSelector, elementIdName, isBlocked) {
   if (isBlocked) {
     const session = JSON.parse(sessionStorage.getItem('user_session'));
     // Administradores NUNCA são bloqueados visualmente no portal
-    if (session && session.user && session.user.role === 'admin') {
+    if (session && session.user && ['admin', 'ceo', 'coo'].includes(session.user.role)) {
       return;
     }
     
@@ -2288,7 +2289,14 @@ async function loadAdminUsersTable() {
           </span>
         </td>
         <td style="padding: 12px 15px; color:var(--text-creme-dark); font-size:0.78rem;">${user.origin || 'manual'}</td>
-        <td style="padding: 12px 15px;"><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1);">${user.role || 'student'}</span></td>
+        <td style="padding: 12px 15px;">
+          <select class="role-selector-badge" data-email="${user.email}">
+            <option value="student" ${user.role === 'student' ? 'selected' : ''}>student</option>
+            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>admin</option>
+            <option value="ceo" ${user.role === 'ceo' ? 'selected' : ''}>ceo</option>
+            <option value="coo" ${user.role === 'coo' ? 'selected' : ''}>coo</option>
+          </select>
+        </td>
         <td style="padding: 12px 15px; text-align:center;">
           <button class="btn-table-action toggle-status" data-email="${user.email}">
             ${user.status === 'active' ? '<i class="fa-solid fa-user-slash" style="margin-right: 4px;"></i>Inativar' : '<i class="fa-solid fa-user-check" style="margin-right: 4px;"></i>Ativar'}
@@ -2319,8 +2327,8 @@ async function loadAdminUsersTable() {
       // Hook de excluir
       tr.querySelector('.delete-user').addEventListener('click', async () => {
         const email = user.email;
-        if (user.role === 'admin') {
-          alert("Não é possível excluir a conta do Administrador!");
+        if (['admin', 'ceo', 'coo'].includes(user.role)) {
+          alert("Não é possível excluir contas de cargos administrativos (Admin, CEO ou COO)!");
           return;
         }
         if (!confirm(`Deseja realmente excluir permanentemente o cadastro de ${user.name}?`)) {
@@ -2336,6 +2344,39 @@ async function loadAdminUsersTable() {
           }
         } catch (e) {
           console.error("Falha ao excluir aluna:", e);
+        }
+      });
+      
+      // Hook de alterar cargo (promover/rebaixar)
+      tr.querySelector('.role-selector-badge').addEventListener('change', async (event) => {
+        const email = user.email;
+        const newRole = event.target.value;
+        
+        try {
+          const roleRes = await fetch('/api/admin/users/update-role', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, role: newRole })
+          });
+          
+          const result = await roleRes.json();
+          if (roleRes.ok && result.success) {
+            loadAdminUsersTable();
+            
+            // Se o próprio usuário logado se alterou, recarrega
+            const loggedInUser = JSON.parse(sessionStorage.getItem('user_session'))?.user;
+            if (loggedInUser && loggedInUser.email === email) {
+              alert("Você alterou seu próprio cargo! A página será recarregada para aplicar as novas permissões.");
+              window.location.reload();
+            }
+          } else {
+            alert("Erro ao alterar cargo: " + (result.error || "Erro desconhecido"));
+            event.target.value = user.role || 'student';
+          }
+        } catch (e) {
+          console.error("Falha ao alterar cargo:", e);
+          alert("Erro de conexão ao alterar cargo.");
+          event.target.value = user.role || 'student';
         }
       });
       

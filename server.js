@@ -285,6 +285,46 @@ async function dbUpdateUserStatus(email, newStatus) {
   return null;
 }
 
+// 4.5. Update User Role
+async function dbUpdateUserRole(email, newRole) {
+  const normalizedEmail = email.toLowerCase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({ role: newRole })
+        .eq('email', normalizedEmail)
+        .select();
+      if (error) throw error;
+      if (data && data.length > 0) {
+        const u = data[0];
+        return {
+          name: u.name,
+          email: u.email,
+          password: u.password,
+          status: u.status,
+          createdAt: u.created_at,
+          origin: u.origin,
+          role: u.role,
+          achievements: u.achievements || []
+        };
+      }
+    } catch (err) {
+      console.error("Erro ao atualizar cargo do usuário no Supabase:", err);
+    }
+  }
+  
+  const users = readUsersLocal();
+  const idx = users.findIndex(u => u.email.toLowerCase() === normalizedEmail);
+  if (idx >= 0) {
+    users[idx].role = newRole;
+    users[idx].updatedAt = new Date().toISOString();
+    writeUsersLocal(users);
+    return users[idx];
+  }
+  return null;
+}
+
 async function dbUpdateUserAchievements(email, achievements) {
   const normalizedEmail = email.toLowerCase();
   if (supabase) {
@@ -1168,6 +1208,27 @@ app.post('/api/admin/users/toggle-status', async (req, res) => {
   res.json({ success: true, user: updatedUser });
 });
 
+// Route: Update User Role (Admin only)
+app.post('/api/admin/users/update-role', async (req, res) => {
+  const { email, role } = req.body;
+  if (!email || !role) {
+    return res.status(400).json({ error: "E-mail e cargo são obrigatórios." });
+  }
+
+  const user = await dbFindUser(email);
+  if (!user) {
+    return res.status(404).json({ error: "Usuário não encontrado." });
+  }
+
+  const validRoles = ['student', 'admin', 'ceo', 'coo'];
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({ error: "Cargo inválido." });
+  }
+
+  const updatedUser = await dbUpdateUserRole(email, role);
+  res.json({ success: true, user: updatedUser });
+});
+
 // Route: Delete User (Admin only)
 app.delete('/api/admin/users/:email', async (req, res) => {
   const { email } = req.params;
@@ -1180,8 +1241,8 @@ app.delete('/api/admin/users/:email', async (req, res) => {
     return res.status(404).json({ error: "Usuário não encontrado." });
   }
 
-  if (user.role === 'admin') {
-    return res.status(400).json({ error: "Não é possível excluir a conta do Administrador!" });
+  if (['admin', 'ceo', 'coo'].includes(user.role)) {
+    return res.status(400).json({ error: "Não é possível excluir contas administrativas (Admin, CEO ou COO)!" });
   }
 
   const deleted = await dbDeleteUser(email);
@@ -1413,7 +1474,7 @@ app.delete('/api/comments/:commentId', async (req, res) => {
   try {
     // Admins podem deletar qualquer comentário
     const requester = await dbFindUser(user_email);
-    const isAdmin = requester && requester.role === 'admin';
+    const isAdmin = requester && ['admin', 'ceo', 'coo'].includes(requester.role);
 
     const result = await dbDeleteComment(commentId, user_email, isAdmin);
     if (result.success) {

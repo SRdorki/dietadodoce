@@ -2073,14 +2073,24 @@ async function loadAdminLocksAndAnnouncement() {
       bannerEl.classList.add('hidden');
     }
     
-    // 2. Aplica as restrições / overlays
+    // 2. Oculta ou exibe os elementos de acordo com os bloqueios
     const blocks = currentAdminConfig.blockedElements || [];
-    
-    applyBlockOverlay('#tab-podclasses', 'podclasses', blocks.includes('tab-podclasses'));
-    applyBlockOverlay('#tab-exercises', 'exercises', blocks.includes('tab-exercises'));
-    applyBlockOverlay('#tab-achievements', 'achievements', blocks.includes('tab-achievements'));
-    applyBlockOverlay('.comments-card', 'comments', blocks.includes('tab-comments'));
-    applyBlockOverlay('.upsell-card-vip', 'upsell', blocks.includes('tab-upsell'));
+    const session = JSON.parse(sessionStorage.getItem('user_session'));
+    const isAdmin = session && session.user && session.user.role === 'admin';
+
+    // Mapeamento: id do bloqueio -> { seletor da seção, data-tab do botão sidebar }
+    const blockMap = [
+      { id: 'tab-podclasses',  section: '#tab-podclasses',  sidebarTab: 'tab-podclasses'  },
+      { id: 'tab-exercises',   section: '#tab-exercises',   sidebarTab: 'tab-exercises'   },
+      { id: 'tab-achievements',section: '#tab-achievements',sidebarTab: 'tab-achievements' },
+      { id: 'tab-comments',    section: '.comments-card',   sidebarTab: null              },
+      { id: 'tab-upsell',      section: '.upsell-card-vip', sidebarTab: null              },
+    ];
+
+    blockMap.forEach(({ id, section, sidebarTab }) => {
+      const isBlocked = blocks.includes(id);
+      applyBlockVisibility(section, sidebarTab, isBlocked, isAdmin);
+    });
     
     // Atualiza os toggles visuais no painel se o usuário for o admin
     syncAdminTogglesUI();
@@ -2090,37 +2100,35 @@ async function loadAdminLocksAndAnnouncement() {
   }
 }
 
-// Lógica de inserção de overlay de bloqueio fosco
-function applyBlockOverlay(elementSelector, elementIdName, isBlocked) {
-  const el = document.querySelector(elementSelector);
-  if (!el) return;
-  
-  // Remove overlay anterior se houver
-  const existing = el.querySelector(`.blocked-overlay-${elementIdName}`);
-  if (existing) {
-    existing.remove();
-    el.classList.remove('blocked-feature-container');
-  }
-  
-  if (isBlocked) {
-    const session = JSON.parse(sessionStorage.getItem('user_session'));
-    // Administradores NUNCA são bloqueados visualmente no portal
-    if (session && session.user && session.user.role === 'admin') {
-      return;
+// Oculta completamente ou exibe um elemento bloqueado e seu botão na sidebar
+function applyBlockVisibility(sectionSelector, sidebarTabId, isBlocked, isAdmin) {
+  const section = document.querySelector(sectionSelector);
+
+  // Botão correspondente na sidebar (se existir)
+  const sidebarBtn = sidebarTabId
+    ? document.querySelector(`.nav-tab-btn[data-tab="${sidebarTabId}"]`)
+    : null;
+
+  if (isBlocked && !isAdmin) {
+    // Oculta a seção de conteúdo
+    if (section) section.classList.add('hidden');
+
+    // Oculta o botão da sidebar
+    if (sidebarBtn) sidebarBtn.classList.add('hidden');
+
+    // Se a aba ativa for a que foi bloqueada, navega para a aba de aulas
+    if (sidebarBtn && sidebarBtn.classList.contains('active')) {
+      const defaultTab = document.querySelector('.nav-tab-btn[data-tab="tab-classes"]');
+      if (defaultTab) defaultTab.click();
     }
-    
-    el.classList.add('blocked-feature-container');
-    
-    const overlay = document.createElement('div');
-    overlay.className = `blocked-feature-overlay blocked-overlay-${elementIdName}`;
-    overlay.innerHTML = `
-      <div class="blocked-content-box">
-        <div class="blocked-icon"><i class="fa-solid fa-lock"></i></div>
-        <h4 class="blocked-title">Ainda Não Disponível</h4>
-        <p class="blocked-desc">Este recurso foi temporariamente bloqueado pela administração ou será liberado no seu cronograma em breve!</p>
-      </div>
-    `;
-    el.appendChild(overlay);
+  } else {
+    // Restaura visibilidade
+    if (section) section.classList.remove('hidden');
+
+    // Restaura o botão da sidebar (exceto botões que têm hidden permanente como admin/webhook)
+    if (sidebarBtn && !sidebarBtn.id) {
+      sidebarBtn.classList.remove('hidden');
+    }
   }
 }
 

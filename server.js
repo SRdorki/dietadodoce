@@ -19,15 +19,8 @@ if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-// Multer storage config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, unique + ext);
-  }
-});
+// Multer storage config - Use memoryStorage for hybrid serverless/local resilience
+const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
 // Middleware
@@ -49,11 +42,34 @@ if (supabaseUrl && supabaseKey) {
   try {
     supabase = createClient(supabaseUrl, supabaseKey);
     console.log("🟢 Conexão com o Supabase inicializada com sucesso!");
+    ensureSupabaseBucket();
   } catch (error) {
     console.error("🔴 Erro ao inicializar cliente Supabase:", error);
   }
 } else {
   console.log("ℹ️ Supabase não configurado no .env. Usando banco de dados local (JSON) como fallback.");
+}
+
+// Helper to ensure Supabase storage bucket exists and is public
+async function ensureSupabaseBucket() {
+  if (!supabase) return;
+  try {
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    if (listError) throw listError;
+    
+    const exists = buckets.some(b => b.name === 'uploads');
+    if (!exists) {
+      const { error: createError } = await supabase.storage.createBucket('uploads', {
+        public: true,
+        allowedMimeTypes: null,
+        fileSizeLimit: 52428800 // 50MB
+      });
+      if (createError) console.error("🔴 Erro ao criar bucket 'uploads' no Supabase:", createError);
+      else console.log("🟢 Bucket 'uploads' criado com sucesso no Supabase!");
+    }
+  } catch (err) {
+    console.error("🔴 Erro ao verificar/criar bucket no Supabase:", err);
+  }
 }
 
 // Helper to read users from local file (fallback)
@@ -1228,17 +1244,65 @@ app.delete('/api/admin/course/lessons/:id', async (req, res) => {
   res.json({ success: true });
 });
 
-// POST: Upload file attachment
-app.post('/api/admin/upload', upload.single('file'), (req, res) => {
+// POST: Upload file attachment - Hybrid local & Supabase storage handler
+app.post('/api/admin/upload', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Nenhum arquivo enviado." });
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.json({
-    success: true,
-    url: fileUrl,
-    originalName: req.file.originalname,
-    size: req.file.size,
-    mimetype: req.file.mimetype
-  });
+  
+  const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+  const ext = path.extname(req.file.originalname);
+  const filename = unique + ext;
+
+  if (supabase) {
+    try {
+      // Garantir que o bucket de uploads existe
+      await ensureSupabaseBucket();
+
+      const { data, error } = await supabase.storage
+        .from('uploads')
+        .upload(filename, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: true
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(filename);
+
+      console.log(`🟢 Upload feito com sucesso no Supabase Storage: ${filename}`);
+
+      return res.json({
+        success: true,
+        url: publicUrl,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      });
+    } catch (err) {
+      console.error("🔴 Erro ao fazer upload no Supabase Storage, tentando fallback local:", err);
+    }
+  }
+
+  // Fallback Local (para rodar offline ou caso o Supabase falhe)
+  try {
+    const filePath = path.join(UPLOADS_DIR, filename);
+    fs.writeFileSync(filePath, req.file.buffer);
+    
+    const fileUrl = `/uploads/${filename}`;
+    console.log(`🟢 Fallback local: Arquivo salvo localmente em ${fileUrl}`);
+
+    res.json({
+      success: true,
+      url: fileUrl,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      mimetype: req.file.mimetype
+    });
+  } catch (err) {
+    console.error("🔴 Erro no upload local:", err);
+    res.status(500).json({ error: "Erro ao salvar arquivo no servidor local: " + err.message });
+  }
 });
 
 // ================= BONUS API ROUTES =================

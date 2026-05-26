@@ -2656,7 +2656,15 @@ async function uploadLessonFile() {
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...'; }
 
     const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch (jsonErr) {
+      if (!res.ok) {
+        throw new Error(`Erro do Servidor (status ${res.status})`);
+      }
+      throw jsonErr;
+    }
     if (!res.ok) throw new Error(data.error || 'Erro no upload');
 
     _lessonModalAttachments.push({
@@ -2926,7 +2934,14 @@ async function uploadBonusFile(input) {
       document.getElementById('acm-bonus-file-url').value = data.url;
       _currentBonusFileUrl = data.url;
     } else {
-      alert("Erro ao subir arquivo.");
+      let errMsg = "Erro ao subir arquivo.";
+      try {
+        const data = await res.json();
+        errMsg = data.error || errMsg;
+      } catch (e) {
+        errMsg = `Erro do Servidor (status ${res.status})`;
+      }
+      alert(errMsg);
     }
   } catch (e) {
     alert("Erro de conexão ao subir arquivo.");

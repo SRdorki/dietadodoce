@@ -863,27 +863,6 @@ a:hover {
   top: -2px; left: 2px;
 }
 
-.share-lesson {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.85rem;
-  color: var(--text-creme-muted);
-}
-.btn-share {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--glass-border);
-  color: var(--text-creme);
-  padding: 6px 12px;
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: var(--transition-smooth);
-}
-.btn-share:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: var(--primary-strawberry);
-}
 
 /* LESSON DETAILS SUB TABS */
 .lesson-details-card {
